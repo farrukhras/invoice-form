@@ -71,7 +71,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     validationSchema,
     enableReinitialize: true,
     onSubmit: (values) => {
-      console.log("Submitted values:", values);
+      console.log("Submitted values as JSON:", JSON.stringify(values, null, 2));
       setInvoiceData(values);
     },
   });
@@ -502,7 +502,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   onChange={formik.handleChange}
                   className={inputClassName}
                 />
-                  {formik.touched.items?.[index]?.price &&
+                {formik.touched.items?.[index]?.price &&
                   typeof formik.errors.items?.[index] !== "string" &&
                   formik.errors.items?.[index]?.price && (
                     <p className="text-red-500">
@@ -518,11 +518,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   Total
                 </label>
                 <input
-                  type="number"
-                  placeholder="Price"
-                  name={`items[${index}].price`}
-                  value={formik.values.items[index].price}
-                  onChange={formik.handleChange}
+                  type="text"
+                  value={(item.quantity * item.price).toFixed(2)}
                   className={inputClassName}
                   disabled
                 />
@@ -535,7 +532,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   Total
                 </label>
                 <div className="mt-1 block w-full py-2.5 flex justify-center">
-                  <Trash2 className="w-6 h-6 cursor-pointer" />
+                  <Trash2
+                    className="w-6 h-6 cursor-pointer"
+                    onClick={() => {
+                      const items = formik.values.items.filter(
+                        (_, i) => i !== index
+                      );
+                      formik.setFieldValue("items", items);
+                    }}
+                  />
                 </div>
               </div>
             </div>
