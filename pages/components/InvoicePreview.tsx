@@ -3,3 +3,5 @@ function InvoicePreview() {
     <div>InvoicePreview Component</div>
   )
 }
+
+export default InvoicePreview;
