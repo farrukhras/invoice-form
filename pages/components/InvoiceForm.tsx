@@ -4,18 +4,20 @@ import * as Yup from "yup";
 import { InvoiceData } from "../types";
 import { Trash2, Plus } from "lucide-react";
 import axios from "axios";
+
 interface InvoiceFormProps {
   invoiceData: InvoiceData;
   setInvoiceData: React.Dispatch<React.SetStateAction<InvoiceData>>;
+  triggerSubmit: React.MutableRefObject<() => void>;
 }
 
 const InvoiceForm: React.FC<InvoiceFormProps> = ({
   invoiceData,
   setInvoiceData,
+  triggerSubmit,
 }) => {
   const [countries, setCountries] = useState<string[]>([]);
 
-  // Fetching countries from REST Countries API
   useEffect(() => {
     axios
       .get("https://restcountries.com/v3.1/all")
@@ -70,11 +72,21 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     initialValues: invoiceData,
     validationSchema,
     enableReinitialize: true,
-    onSubmit: (values) => {
-      console.log("Submitted values as JSON:", JSON.stringify(values, null, 2));
-      setInvoiceData(values);
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        setInvoiceData(values);
+      } catch (error) {
+        console.error(error);
+      }
     },
   });
+
+  useEffect(() => {
+    formik.resetForm();
+  }, [invoiceData]);
+
+  // Expose submitForm to parent component
+  triggerSubmit.current = formik.submitForm;
 
   const inputClassName =
     "form-input mt-1 block w-full border border-[#D0D5DD] rounded-lg py-2.5 px-3.5 text-base font-normal";
@@ -433,7 +445,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         </div>
 
         {/* Items List */}
-        <div className="">
+        <div>
           <h3 className="text-2xl font-semibold mb-4">Items List</h3>
           {formik.values.items.map((item, index) => (
             <div
