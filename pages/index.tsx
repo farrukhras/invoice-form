@@ -28,7 +28,7 @@ export default function Home() {
       streetAddress: "",
     },
     invoiceDate: new Date().toISOString().split("T")[0],
-    paymentTerms: "NET_10_DAYS",
+    paymentTerms: "",
     projectDescription: "",
     items: [{ name: "", quantity: 1, price: 0 }],
   });
@@ -68,7 +68,7 @@ export default function Home() {
             invoiceData={invoiceData}
             setInvoiceData={setInvoiceData}
           />
-          <InvoicePreview invoiceData={invoiceData} />
+          {/* <InvoicePreview invoiceData={invoiceData} /> */}
         </div>
       </div>
     </div>

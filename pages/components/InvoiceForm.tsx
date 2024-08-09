@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { InvoiceData } from "../types";
 import { Trash2, Plus } from "lucide-react";
-
+import axios from "axios";
 interface InvoiceFormProps {
   invoiceData: InvoiceData;
   setInvoiceData: React.Dispatch<React.SetStateAction<InvoiceData>>;
@@ -13,6 +13,23 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   invoiceData,
   setInvoiceData,
 }) => {
+  const [countries, setCountries] = useState<string[]>([]);
+
+  // Fetching countries from REST Countries API
+  useEffect(() => {
+    axios
+      .get("https://restcountries.com/v3.1/all")
+      .then((response) => {
+        const countryNames = response.data.map(
+          (country: any) => country.name.common
+        );
+        setCountries(countryNames.sort());
+      })
+      .catch((error) => {
+        console.error("Error fetching countries:", error);
+      });
+  }, []);
+
   const validationSchema = Yup.object().shape({
     billFrom: Yup.object({
       companyName: Yup.string().required("Company name is required"),
@@ -65,7 +82,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   return (
     <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD]">
       <form onSubmit={formik.handleSubmit}>
-        {/* Bill From */}
         <div className="mb-9">
           <h3 className="text-2xl font-semibold mb-4">Bill From</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -115,18 +131,26 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
+            <div className="mb-4">
               <label htmlFor="billFrom.country" className="text-sm font-medium">
                 Country
               </label>
-              <input
-                type="text"
+              <select
                 id="billFrom.country"
                 name="billFrom.country"
                 value={formik.values.billFrom.country}
                 onChange={formik.handleChange}
                 className={inputClassName}
-              />
+              >
+                <option value="" disabled>
+                  Select Country
+                </option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
               {formik.touched.billFrom?.country &&
                 formik.errors.billFrom?.country && (
                   <p className="text-red-500">
@@ -134,12 +158,13 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   </p>
                 )}
             </div>
+
             <div>
               <label htmlFor="billFrom.city" className="text-sm font-medium">
                 City
               </label>
               <input
-                type="email"
+                type="text"
                 id="billFrom.city"
                 name="billFrom.city"
                 value={formik.values.billFrom.city}
@@ -159,7 +184,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 Postal Code
               </label>
               <input
-                type="email"
+                type="text"
                 id="billFrom.postalCode"
                 name="billFrom.postalCode"
                 value={formik.values.billFrom.postalCode}
@@ -200,7 +225,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </div>
         </div>
 
-        {/* Bill To */}
         <div className="mb-8">
           <h3 className="text-2xl font-semibold mb-4">Bill To</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -250,29 +274,38 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
+            <div className="mb-4">
               <label htmlFor="billTo.country" className="text-sm font-medium">
                 Country
               </label>
-              <input
-                type="text"
+              <select
                 id="billTo.country"
                 name="billTo.country"
                 value={formik.values.billTo.country}
                 onChange={formik.handleChange}
                 className={inputClassName}
-              />
+              >
+                <option value="" disabled>
+                  Select Country
+                </option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
               {formik.touched.billTo?.country &&
                 formik.errors.billTo?.country && (
                   <p className="text-red-500">{formik.errors.billTo.country}</p>
                 )}
             </div>
+
             <div>
               <label htmlFor="billTo.city" className="text-sm font-medium">
                 City
               </label>
               <input
-                type="email"
+                type="text"
                 id="billTo.city"
                 name="billTo.city"
                 value={formik.values.billTo.city}
@@ -291,7 +324,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 Postal Code
               </label>
               <input
-                type="email"
+                type="text"
                 id="billTo.postalCode"
                 name="billTo.postalCode"
                 value={formik.values.billTo.postalCode}
@@ -350,7 +383,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 <p className="text-red-500">{formik.errors.invoiceDate}</p>
               )}
             </div>
-            <div>
+            <div className="mb-4">
               <label htmlFor="paymentTerms" className="text-sm font-medium">
                 Payment Terms
               </label>
@@ -361,6 +394,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 onChange={formik.handleChange}
                 className={inputClassName}
               >
+                <option value="" disabled>
+                  Select Term
+                </option>
                 <option value="NET_10_DAYS">Net 10 Days</option>
                 <option value="NET_20_DAYS">Net 20 Days</option>
                 <option value="NET_30_DAYS">Net 30 Days</option>
@@ -420,6 +456,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   className={inputClassName}
                 />
                 {formik.touched.items?.[index]?.name &&
+                  typeof formik.errors.items?.[index] !== "string" &&
                   formik.errors.items?.[index]?.name && (
                     <p className="text-red-500">
                       {formik.errors.items[index].name}
@@ -443,6 +480,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   className={inputClassName}
                 />
                 {formik.touched.items?.[index]?.quantity &&
+                  typeof formik.errors.items?.[index] !== "string" &&
                   formik.errors.items?.[index]?.quantity && (
                     <p className="text-red-500">
                       {formik.errors.items[index].quantity}
@@ -464,7 +502,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   onChange={formik.handleChange}
                   className={inputClassName}
                 />
-                {formik.touched.items?.[index]?.price &&
+                  {formik.touched.items?.[index]?.price &&
+                  typeof formik.errors.items?.[index] !== "string" &&
                   formik.errors.items?.[index]?.price && (
                     <p className="text-red-500">
                       {formik.errors.items[index].price}
@@ -511,7 +550,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             }
             className="flex flex-row items-center justify-center bg-[#7F56D9] text-white font-medium text-base px-5 py-2.5 rounded-lg w-full space-x-1"
           >
-            <Plus className="w-5 h-5 cursor-pointer"/> 
+            <Plus className="w-5 h-5 cursor-pointer" />
             <span>Add New Item</span>
           </button>
         </div>
