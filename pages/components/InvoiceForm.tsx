@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import { InvoiceData } from "../types";
 import { Trash2, Plus } from "lucide-react";
 import ButtonLoader from "./ButtonLoader";
+import InvoicePreview from "./InvoicePreview";
 import axios from "axios";
 
 interface InvoiceFormProps {
@@ -117,11 +118,11 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left mb-8">
         <div className="flex flex-col mb-4 md:mb-0">
           <span className="text-3xl font-medium">New Invoice</span>
-          <span className="text-base font-normal">
+          <span className="text-base font-light">
             Create new invoice for your customers
           </span>
         </div>
-        <div className="flex space-x-3 justify-center md:justify-start mt-8">
+        <div className="flex space-x-3 justify-center md:justify-start">
           <button
             type="button"
             className="text-[#344054] font-medium text-base px-5 py-2.5 rounded-lg border border-[#D0D5DD]"
@@ -142,8 +143,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-screen items-center justify-between">
         <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD]">
           <form onSubmit={formik.handleSubmit}>
-            <div className="mb-9">
-              <h3 className="text-2xl font-semibold mb-4">Bill From</h3>
+            <div className="mb-8">
+              <h3 className="text-2xl font-semibold mb-3">Bill From</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label
@@ -193,7 +194,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="mb-4">
+                <div>
                   <label
                     htmlFor="billFrom.country"
                     className="text-sm font-medium"
@@ -272,7 +273,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     )}
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1">
                 <div>
                   <label
                     htmlFor="billFrom.streetAddress"
@@ -299,8 +300,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               </div>
             </div>
 
-            <div className="mb-8">
-              <h3 className="text-2xl font-semibold mb-4">Bill To</h3>
+            <div className="mb-6">
+              <h3 className="text-2xl font-semibold mb-3">Bill To</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label
@@ -350,7 +351,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="mb-4">
+                <div>
                   <label
                     htmlFor="billTo.country"
                     className="text-sm font-medium"
@@ -453,7 +454,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               </div>
             </div>
 
-            <div className="mb-9">
+            <div className="mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label htmlFor="invoiceDate" className="text-sm font-medium">
@@ -472,7 +473,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     <p className="text-red-500">{formik.errors.invoiceDate}</p>
                   )}
                 </div>
-                <div className="mb-4">
+                <div>
                   <label htmlFor="paymentTerms" className="text-sm font-medium">
                     Payment Terms
                   </label>
@@ -658,7 +659,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             </div>
           </form>
         </div>
-        {/* <InvoicePreview invoiceData={invoiceData} /> */}
+
+        <InvoicePreview />
       </div>
     </div>
   );
