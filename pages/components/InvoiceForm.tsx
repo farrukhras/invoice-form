@@ -6,6 +6,7 @@ import { Trash2, Plus } from "lucide-react";
 import ButtonLoader from "./ButtonLoader";
 import InvoicePreview from "./InvoicePreview";
 import PaymentTermsDropdown from "./PaymentTermsDropdown";
+import { successToaster } from "../components/SuccessToast";
 import axios from "axios";
 
 interface InvoiceFormProps {
@@ -47,7 +48,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   };
 
   const handleSave = async () => {
-    // Mark all fields as touched to trigger validation error display
     formik.setTouched({
       billFrom: {
         companyName: true,
@@ -76,19 +76,20 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     });
 
     // Perform validation
-    const isValid = await formik.validateForm();
-    if (Object.keys(isValid).length === 0) {
+    const errors = await formik.validateForm();
+    if (Object.keys(errors).length === 0) {
       setIsSaving(true);
       await formik.submitForm();
+      console.log("Submitted values:", JSON.stringify(formik.values, null, 2));
       setTimeout(() => {
         setIsSaving(false);
-        console.log(
-          "Submitted values:",
-          JSON.stringify(formik.values, null, 2)
-        );
         formik.resetForm({ values: initialFormData });
         setInvoiceData(initialFormData);
-      }, 3000);
+        successToaster(
+          "Invoice created successfully!",
+          "Your invoice has been created."
+        );
+      }, 1000);
     } else {
       console.log("Validation errors:", formik.errors);
     }
@@ -152,7 +153,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   return (
     <div className="md:px-12 px-6 py-6 h-full">
       <div className="flex flex-col mb-8 md:mb-8 text-center md:text-left">
-      <div className="flex flex-col md:flex-row justify-between items-center text-center">
+        <div className="flex flex-col md:flex-row justify-between items-center text-center">
           <span className="text-3xl font-medium">New Invoice</span>
           <div className="flex space-x-3 justify-center md:justify-start">
             <button
@@ -177,8 +178,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       </div>
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-      <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD] flex flex-col">
-      <form onSubmit={formik.handleSubmit} className="flex flex-col h-full">
+        <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD] flex flex-col">
+          <form onSubmit={formik.handleSubmit} className="flex flex-col h-full">
             <div className="mb-8">
               <h3 className="text-2xl font-semibold mb-3">Bill From</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
