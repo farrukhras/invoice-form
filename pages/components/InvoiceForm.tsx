@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { InvoiceData } from "../types";
+import { InvoiceData } from "../../interfaces/types";
 import { Trash2, Plus } from "lucide-react";
 import ButtonLoader from "./ButtonLoader";
 import InvoicePreview from "./InvoicePreview";
@@ -112,6 +112,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
   const inputClassName =
     "form-input mt-1 block w-full border border-[#D0D5DD] rounded-lg py-2.5 px-3.5 text-base font-normal";
+
+  if (!invoiceData) {
+    return <div>Loading...</div>; // Or a more suitable fallback
+  }
 
   return (
     <div className="p-8">
