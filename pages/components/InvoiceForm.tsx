@@ -5,6 +5,7 @@ import { InvoiceData } from "../../interfaces/types";
 import { Trash2, Plus } from "lucide-react";
 import ButtonLoader from "./ButtonLoader";
 import InvoicePreview from "./InvoicePreview";
+import PaymentTermsDropdown from "./PaymentTermsDropdown";
 import axios from "axios";
 
 interface InvoiceFormProps {
@@ -508,21 +509,18 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   <label htmlFor="paymentTerms" className="text-sm font-medium">
                     Payment Terms
                   </label>
-                  <select
-                    id="paymentTerms"
-                    name="paymentTerms"
+                  <PaymentTermsDropdown
+                    options={[
+                      { value: "NET_10_DAYS", label: "Net 10 Days" },
+                      { value: "NET_20_DAYS", label: "Net 20 Days" },
+                      { value: "NET_30_DAYS", label: "Net 30 Days" },
+                    ]}
                     value={formik.values.paymentTerms}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className={inputClassName}
-                  >
-                    <option value="" disabled>
-                      Select Term
-                    </option>
-                    <option value="NET_10_DAYS">Net 10 Days</option>
-                    <option value="NET_20_DAYS">Net 20 Days</option>
-                    <option value="NET_30_DAYS">Net 30 Days</option>
-                  </select>
+                    onChange={(value) =>
+                      formik.setFieldValue("paymentTerms", value)
+                    }
+                    placeholder="Select Term"
+                  />
                   {formik.touched.paymentTerms &&
                     formik.errors.paymentTerms && (
                       <p className="text-red-500">
