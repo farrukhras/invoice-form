@@ -2,18 +2,33 @@ import React from "react";
 import { InvoiceData } from "../../interfaces/types";
 
 interface InvoicePreviewProps {
-  invoiceData: InvoiceData;
+  invoiceData: InvoiceData | undefined;
 }
 
 const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
+  // Provide default values if invoiceData is undefined or properties are missing
   const {
-    billFrom,
-    billTo,
-    invoiceDate,
-    paymentTerms,
-    projectDescription,
-    items,
-  } = invoiceData;
+    billFrom = {
+      companyName: "",
+      companyEmail: "",
+      country: "",
+      city: "",
+      postalCode: "",
+      streetAddress: "",
+    },
+    billTo = {
+      clientName: "",
+      clientEmail: "",
+      country: "",
+      city: "",
+      postalCode: "",
+      streetAddress: "",
+    },
+    invoiceDate = "",
+    paymentTerms = "",
+    projectDescription = "",
+    items = [],
+  } = invoiceData || {};
 
   const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + item.quantity * item.price, 0);
@@ -26,12 +41,17 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
   };
 
   const formatDate = (date: string) => {
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return "Invalid date";
+    }
     return new Intl.DateTimeFormat('en-US', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
-    }).format(new Date(date));
+    }).format(parsedDate);
   };
+  
 
   const formatPaymentTerms = (terms: string) => {
     return terms.replace(/_/g, ' ');
