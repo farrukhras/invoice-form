@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import InvoiceForm from "./components/InvoiceForm";
 import Header from "./components/Header";
-import { InvoiceData } from "./types";
+import { InvoiceData } from "../interfaces/types";
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
