@@ -6,7 +6,7 @@ import { Trash2, Plus } from "lucide-react";
 import ButtonLoader from "./ButtonLoader";
 import InvoicePreview from "./InvoicePreview";
 import PaymentTermsDropdown from "./PaymentTermsDropdown";
-import { successToaster } from "../components/SuccessToast";
+import { successToaster } from "../../utils/SuccessToast";
 import axios from "axios";
 
 interface InvoiceFormProps {
