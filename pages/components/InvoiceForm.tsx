@@ -46,6 +46,34 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   };
 
   const handleSave = async () => {
+    // Mark all fields as touched to trigger validation error display
+    formik.setTouched({
+      billFrom: {
+        companyName: true,
+        companyEmail: true,
+        country: true,
+        city: true,
+        postalCode: true,
+        streetAddress: true,
+      },
+      billTo: {
+        clientName: true,
+        clientEmail: true,
+        country: true,
+        city: true,
+        postalCode: true,
+        streetAddress: true,
+      },
+      invoiceDate: true,
+      paymentTerms: true,
+      items: formik.values.items.map(() => ({
+        name: true,
+        quantity: true,
+        price: true,
+      })),
+    });
+
+    // Perform validation
     const isValid = await formik.validateForm();
     if (Object.keys(isValid).length === 0) {
       setIsSaving(true);
@@ -60,7 +88,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         setInvoiceData(initialFormData);
       }, 3000);
     } else {
-      formik.setTouched(formik.touched);
       console.log("Validation errors:", formik.errors);
     }
   };
@@ -114,7 +141,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     "form-input mt-1 block w-full border border-[#D0D5DD] rounded-lg py-2.5 px-3.5 text-base font-normal";
 
   if (!invoiceData) {
-    return <div>Loading...</div>; // Or a more suitable fallback
+    return <div>Loading...</div>;
   }
 
   return (
