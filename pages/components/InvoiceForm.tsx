@@ -67,6 +67,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       },
       invoiceDate: true,
       paymentTerms: true,
+      projectDescription: true,
       items: formik.values.items.map(() => ({
         name: true,
         quantity: true,
@@ -116,6 +117,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }),
     invoiceDate: Yup.string().required("Invoice date is required"),
     paymentTerms: Yup.string().required("Payment terms are required"),
+    projectDescription: Yup.string().required("Project description is required"),
     items: Yup.array().of(
       Yup.object({
         name: Yup.string().required("Item name is required"),
