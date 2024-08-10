@@ -117,7 +117,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }),
     invoiceDate: Yup.string().required("Invoice date is required"),
     paymentTerms: Yup.string().required("Payment terms are required"),
-    projectDescription: Yup.string().required("Project description is required"),
+    projectDescription: Yup.string().required(
+      "Project description is required"
+    ),
     items: Yup.array().of(
       Yup.object({
         name: Yup.string().required("Item name is required"),
@@ -148,9 +150,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   }
 
   return (
-    <div className="px-8 py-6">
+    <div className="md:px-12 px-6 py-6 h-full">
       <div className="flex flex-col mb-8 md:mb-8 text-center md:text-left">
-        <div className="flex flex-col md:flex-row justify-between items-center text-center">
+      <div className="flex flex-col md:flex-row justify-between items-center text-center">
           <span className="text-3xl font-medium">New Invoice</span>
           <div className="flex space-x-3 justify-center md:justify-start">
             <button
@@ -174,9 +176,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-screen items-center justify-between">
-        <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD]">
-          <form onSubmit={formik.handleSubmit}>
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+      <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD] flex flex-col">
+      <form onSubmit={formik.handleSubmit} className="flex flex-col h-full">
             <div className="mb-8">
               <h3 className="text-2xl font-semibold mb-3">Bill From</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -691,7 +693,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </form>
         </div>
 
-        <InvoicePreview />
+        <div className="w-full flex flex-col">
+          <InvoicePreview invoiceData={formik.values} />
+        </div>
       </div>
     </div>
   );

@@ -35,11 +35,11 @@ export default function Home() {
   return (
     <div className={`${inter.className}`}>
       <Header />
-      <InvoiceForm
-        invoiceData={invoiceData}
-        setInvoiceData={setInvoiceData}
-        initialFormData={initialFormData}
-      />
+        <InvoiceForm
+          invoiceData={invoiceData}
+          setInvoiceData={setInvoiceData}
+          initialFormData={initialFormData}
+        />
     </div>
   );
 }
