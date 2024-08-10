@@ -146,30 +146,30 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   }
 
   return (
-    <div className="p-8">
-      <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left mb-8">
-        <div className="flex flex-col mb-4 md:mb-0">
+    <div className="px-8 py-6">
+      <div className="flex flex-col mb-8 md:mb-8 text-center md:text-left">
+        <div className="flex flex-col md:flex-row justify-between items-center text-center">
           <span className="text-3xl font-medium">New Invoice</span>
-          <span className="text-base font-light">
-            Create new invoice for your customers
-          </span>
+          <div className="flex space-x-3 justify-center md:justify-start">
+            <button
+              type="button"
+              className="text-[#344054] font-medium text-base px-5 py-2.5 rounded-lg border border-[#D0D5DD]"
+              onClick={handleReset}
+            >
+              {isResetting ? <ButtonLoader text={"Resetting"} /> : "Reset"}
+            </button>
+            <button
+              type="button"
+              className="bg-[#7F56D9] font-medium text-base text-white px-5 py-2.5 rounded-lg"
+              onClick={handleSave}
+            >
+              {isSaving ? <ButtonLoader text={"Saving"} /> : "Save"}
+            </button>
+          </div>
         </div>
-        <div className="flex space-x-3 justify-center md:justify-start">
-          <button
-            type="button"
-            className="text-[#344054] font-medium text-base px-5 py-2.5 rounded-lg border border-[#D0D5DD]"
-            onClick={handleReset}
-          >
-            {isResetting ? <ButtonLoader text={"Resetting"} /> : "Reset"}
-          </button>
-          <button
-            type="button"
-            className="bg-[#7F56D9] font-medium text-base text-white px-5 py-2.5 rounded-lg"
-            onClick={handleSave}
-          >
-            {isSaving ? <ButtonLoader text={"Saving"} /> : "Save"}
-          </button>
-        </div>
+        <span className="text-base font-light">
+          Create new invoice for your customers
+        </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-screen items-center justify-between">
