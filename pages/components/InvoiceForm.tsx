@@ -5,6 +5,7 @@ import { InvoiceData } from "../../interfaces/types";
 import { Trash2, Plus } from "lucide-react";
 import ButtonLoader from "./ButtonLoader";
 import InvoicePreview from "./InvoicePreview";
+import PaymentTermsDropdown from "./PaymentTermsDropdown";
 import axios from "axios";
 
 interface InvoiceFormProps {
@@ -46,6 +47,34 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   };
 
   const handleSave = async () => {
+    // Mark all fields as touched to trigger validation error display
+    formik.setTouched({
+      billFrom: {
+        companyName: true,
+        companyEmail: true,
+        country: true,
+        city: true,
+        postalCode: true,
+        streetAddress: true,
+      },
+      billTo: {
+        clientName: true,
+        clientEmail: true,
+        country: true,
+        city: true,
+        postalCode: true,
+        streetAddress: true,
+      },
+      invoiceDate: true,
+      paymentTerms: true,
+      items: formik.values.items.map(() => ({
+        name: true,
+        quantity: true,
+        price: true,
+      })),
+    });
+
+    // Perform validation
     const isValid = await formik.validateForm();
     if (Object.keys(isValid).length === 0) {
       setIsSaving(true);
@@ -60,7 +89,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         setInvoiceData(initialFormData);
       }, 3000);
     } else {
-      formik.setTouched(formik.touched);
       console.log("Validation errors:", formik.errors);
     }
   };
@@ -114,7 +142,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     "form-input mt-1 block w-full border border-[#D0D5DD] rounded-lg py-2.5 px-3.5 text-base font-normal";
 
   if (!invoiceData) {
-    return <div>Loading...</div>; // Or a more suitable fallback
+    return <div>Loading...</div>;
   }
 
   return (
@@ -481,21 +509,18 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   <label htmlFor="paymentTerms" className="text-sm font-medium">
                     Payment Terms
                   </label>
-                  <select
-                    id="paymentTerms"
-                    name="paymentTerms"
+                  <PaymentTermsDropdown
+                    options={[
+                      { value: "NET_10_DAYS", label: "Net 10 Days" },
+                      { value: "NET_20_DAYS", label: "Net 20 Days" },
+                      { value: "NET_30_DAYS", label: "Net 30 Days" },
+                    ]}
                     value={formik.values.paymentTerms}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className={inputClassName}
-                  >
-                    <option value="" disabled>
-                      Select Term
-                    </option>
-                    <option value="NET_10_DAYS">Net 10 Days</option>
-                    <option value="NET_20_DAYS">Net 20 Days</option>
-                    <option value="NET_30_DAYS">Net 30 Days</option>
-                  </select>
+                    onChange={(value) =>
+                      formik.setFieldValue("paymentTerms", value)
+                    }
+                    placeholder="Select Term"
+                  />
                   {formik.touched.paymentTerms &&
                     formik.errors.paymentTerms && (
                       <p className="text-red-500">
