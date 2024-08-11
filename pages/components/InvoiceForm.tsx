@@ -6,7 +6,9 @@ import { Trash2, Plus } from "lucide-react";
 import ButtonLoader from "./ButtonLoader";
 import InvoicePreview from "./InvoicePreview";
 import PaymentTermsDropdown from "./PaymentTermsDropdown";
+import { successToaster } from "../../utils/SuccessToast";
 import axios from "axios";
+import { createInvoice } from "@/mutations/createInvoice";
 
 interface InvoiceFormProps {
   invoiceData: InvoiceData;
@@ -19,10 +21,11 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   setInvoiceData,
   initialFormData,
 }) => {
-  const [isResetting, setIsResetting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [countries, setCountries] = useState<string[]>([]);
+  const [isResetting, setIsResetting] = useState(false); // State for reset button loading
+  const [isSaving, setIsSaving] = useState(false); // State for save button loading
+  const [countries, setCountries] = useState<string[]>([]); // State to store the list of countries
 
+  // Fetch the list of countries when the component mounts
   useEffect(() => {
     axios
       .get("https://restcountries.com/v3.1/all")
@@ -30,13 +33,14 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         const countryNames = response.data.map(
           (country: any) => country.name.common
         );
-        setCountries(countryNames.sort());
+        setCountries(countryNames.sort()); // Sort by name and set the countries
       })
       .catch((error) => {
         console.error("Error fetching countries:", error);
       });
   }, []);
 
+  // Reset form to initial values
   const handleReset = () => {
     setIsResetting(true);
     setTimeout(() => {
@@ -46,24 +50,29 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }, 1000);
   };
 
+  // Validate and save the form data
   const handleSave = async () => {
-    // Mark all fields as touched to trigger validation error display
+    // Set touched fields to trigger validation messages
     formik.setTouched({
       billFrom: {
         companyName: true,
         companyEmail: true,
-        country: true,
-        city: true,
-        postalCode: true,
-        streetAddress: true,
+        billingFromAddress: {
+          country: true,
+          city: true,
+          postalCode: true,
+          streetAddress: true,
+        },
       },
       billTo: {
         clientName: true,
         clientEmail: true,
-        country: true,
-        city: true,
-        postalCode: true,
-        streetAddress: true,
+        billingToAddress: {
+          country: true,
+          city: true,
+          postalCode: true,
+          streetAddress: true,
+        },
       },
       invoiceDate: true,
       paymentTerms: true,
@@ -75,67 +84,107 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       })),
     });
 
-    // Perform validation
-    const isValid = await formik.validateForm();
-    if (Object.keys(isValid).length === 0) {
+    // Validate the form
+    const errors = await formik.validateForm();
+    if (Object.keys(errors).length === 0) {
+      // Calculate subtotal, tax, and total
+      const subtotal = calculateSubtotal();
+      const tax = subtotal * 0.1; // Assuming 10% tax
+      const total = subtotal + tax;
+
+      const updatedInvoiceData = {
+        ...formik.values,
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+      };
+
       setIsSaving(true);
-      await formik.submitForm();
-      setTimeout(() => {
+
+      try {
+        // const savedInvoice = await createInvoice(formik.values);
+        // setIsSaving(false);
+        // formik.resetForm({ values: initialFormData });
+        // setInvoiceData(initialFormData);
+        // successToaster(
+        //   "Invoice created successfully!",
+        //   "Your invoice has been created."
+        // );
+        // console.log("Saved Invoice:", savedInvoice);
+
+        // Simulate save for demonstration purposes
+        console.log(updatedInvoiceData);
+        setTimeout(() => {
+          setIsSaving(false);
+          formik.resetForm({ values: initialFormData });
+          setInvoiceData(initialFormData);
+          successToaster(
+            "Invoice created successfully!",
+            "Your invoice has been created."
+          );
+        }, 1000);
+      } catch (error) {
+        console.error("Error creating invoice:", error);
         setIsSaving(false);
-        console.log(
-          "Submitted values:",
-          JSON.stringify(formik.values, null, 2)
-        );
-        formik.resetForm({ values: initialFormData });
-        setInvoiceData(initialFormData);
-      }, 3000);
+      }
     } else {
       console.log("Validation errors:", formik.errors);
     }
   };
 
-  const validationSchema = Yup.object().shape({
-    billFrom: Yup.object({
-      companyName: Yup.string().required("Company name is required"),
-      companyEmail: Yup.string()
-        .email("Invalid email")
-        .required("Email is required"),
-      country: Yup.string().required("Country is required"),
-      city: Yup.string().required("City is required"),
-      postalCode: Yup.string().required("Postal code is required"),
-      streetAddress: Yup.string().required("Street address is required"),
-    }),
-    billTo: Yup.object({
-      clientName: Yup.string().required("Client name is required"),
-      clientEmail: Yup.string()
-        .email("Invalid email")
-        .required("Email is required"),
-      country: Yup.string().required("Country is required"),
-      city: Yup.string().required("City is required"),
-      postalCode: Yup.string().required("Postal code is required"),
-      streetAddress: Yup.string().required("Street address is required"),
-    }),
-    invoiceDate: Yup.string().required("Invoice date is required"),
-    paymentTerms: Yup.string().required("Payment terms are required"),
-    projectDescription: Yup.string().required(
-      "Project description is required"
-    ),
-    items: Yup.array().of(
-      Yup.object({
-        name: Yup.string().required("Item name is required"),
-        quantity: Yup.number()
-          .min(1, "Quantity must be at least 1")
-          .required("Quantity is required"),
-        price: Yup.number()
-          .min(0, "Price must be a positive number")
-          .required("Price is required"),
-      })
-    ),
-  });
+  // Calculate the subtotal of all items
+  const calculateSubtotal = () => {
+    return formik.values.items.reduce(
+      (sum, item) => sum + item.quantity * item.price,
+      0
+    );
+  };
 
+  // Formik setup with initial values and validation schema
   const formik = useFormik<InvoiceData>({
     initialValues: invoiceData,
-    validationSchema,
+    validationSchema: Yup.object().shape({
+      billFrom: Yup.object({
+        companyName: Yup.string().required("Company name is required"),
+        companyEmail: Yup.string()
+          .email("Invalid email")
+          .required("Email is required"),
+        billingFromAddress: Yup.object({
+          country: Yup.string().required("Country is required"),
+          city: Yup.string().required("City is required"),
+          postalCode: Yup.string().required("Postal code is required"),
+          streetAddress: Yup.string().required("Street address is required"),
+        }),
+      }),
+      billTo: Yup.object({
+        clientName: Yup.string().required("Client name is required"),
+        clientEmail: Yup.string()
+          .email("Invalid email")
+          .required("Email is required"),
+        billingToAddress: Yup.object({
+          country: Yup.string().required("Country is required"),
+          city: Yup.string().required("City is required"),
+          postalCode: Yup.string().required("Postal code is required"),
+          streetAddress: Yup.string().required("Street address is required"),
+        }),
+      }),
+      invoiceDate: Yup.string().required("Invoice date is required"),
+      paymentTerms: Yup.string().required("Payment terms are required"),
+      projectDescription: Yup.string().required(
+        "Project description is required"
+      ),
+      items: Yup.array().of(
+        Yup.object({
+          name: Yup.string().required("Item name is required"),
+          quantity: Yup.number()
+            .min(1, "Quantity must be at least 1")
+            .required("Quantity is required"),
+          price: Yup.number()
+            .min(0, "Price must be a positive number")
+            .required("Price is required"),
+        })
+      ),
+    }),
     enableReinitialize: true,
     onSubmit: async (values) => {
       setInvoiceData(values);
@@ -152,9 +201,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   return (
     <div className="md:px-12 px-6 py-6 h-full">
       <div className="flex flex-col mb-8 md:mb-8 text-center md:text-left">
-      <div className="flex flex-col md:flex-row justify-between items-center text-center">
-          <span className="text-3xl font-medium">New Invoice</span>
-          <div className="flex space-x-3 justify-center md:justify-start">
+        <div className="flex flex-col md:flex-row justify-between items-center text-center">
+          <span className="text-3xl font-medium mb-4 md:mb-0">New Invoice</span>
+          <div className="flex space-x-3 justify-center md:justify-start mb-4 md:mb-0">
             <button
               type="button"
               className="text-[#344054] font-medium text-base px-5 py-2.5 rounded-lg border border-[#D0D5DD]"
@@ -177,8 +226,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       </div>
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-      <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD] flex flex-col">
-      <form onSubmit={formik.handleSubmit} className="flex flex-col h-full">
+        {/* Invoice Form Section */}
+        <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD] flex flex-col">
+          <form onSubmit={formik.handleSubmit} className="flex flex-col h-full">
+            {/* Bill From Section */}
             <div className="mb-8">
               <h3 className="text-2xl font-semibold mb-3">Bill From</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -232,15 +283,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label
-                    htmlFor="billFrom.country"
+                    htmlFor="billFrom.billingFromAddress.country"
                     className="text-sm font-medium"
                   >
                     Country
                   </label>
                   <select
-                    id="billFrom.country"
-                    name="billFrom.country"
-                    value={formik.values.billFrom.country}
+                    id="billFrom.billingFromAddress.country"
+                    name="billFrom.billingFromAddress.country"
+                    value={formik.values.billFrom.billingFromAddress.country}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={inputClassName}
@@ -254,57 +305,57 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                       </option>
                     ))}
                   </select>
-                  {formik.touched.billFrom?.country &&
-                    formik.errors.billFrom?.country && (
+                  {formik.touched.billFrom?.billingFromAddress?.country &&
+                    formik.errors.billFrom?.billingFromAddress?.country && (
                       <p className="text-red-500">
-                        {formik.errors.billFrom.country}
+                        {formik.errors.billFrom.billingFromAddress.country}
                       </p>
                     )}
                 </div>
 
                 <div>
                   <label
-                    htmlFor="billFrom.city"
+                    htmlFor="billFrom.billingFromAddress.city"
                     className="text-sm font-medium"
                   >
                     City
                   </label>
                   <input
                     type="text"
-                    id="billFrom.city"
-                    name="billFrom.city"
-                    value={formik.values.billFrom.city}
+                    id="billFrom.billingFromAddress.city"
+                    name="billFrom.billingFromAddress.city"
+                    value={formik.values.billFrom.billingFromAddress.city}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={inputClassName}
                   />
-                  {formik.touched.billFrom?.city &&
-                    formik.errors.billFrom?.city && (
+                  {formik.touched.billFrom?.billingFromAddress?.city &&
+                    formik.errors.billFrom?.billingFromAddress?.city && (
                       <p className="text-red-500">
-                        {formik.errors.billFrom.city}
+                        {formik.errors.billFrom.billingFromAddress.city}
                       </p>
                     )}
                 </div>
                 <div>
                   <label
-                    htmlFor="billFrom.postalCode"
+                    htmlFor="billFrom.billingFromAddress.postalCode"
                     className="text-sm font-medium"
                   >
                     Postal Code
                   </label>
                   <input
                     type="text"
-                    id="billFrom.postalCode"
-                    name="billFrom.postalCode"
-                    value={formik.values.billFrom.postalCode}
+                    id="billFrom.billingFromAddress.postalCode"
+                    name="billFrom.billingFromAddress.postalCode"
+                    value={formik.values.billFrom.billingFromAddress.postalCode}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={inputClassName}
                   />
-                  {formik.touched.billFrom?.postalCode &&
-                    formik.errors.billFrom?.postalCode && (
+                  {formik.touched.billFrom?.billingFromAddress?.postalCode &&
+                    formik.errors.billFrom?.billingFromAddress?.postalCode && (
                       <p className="text-red-500">
-                        {formik.errors.billFrom.postalCode}
+                        {formik.errors.billFrom.billingFromAddress.postalCode}
                       </p>
                     )}
                 </div>
@@ -312,30 +363,37 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               <div className="grid grid-cols-1">
                 <div>
                   <label
-                    htmlFor="billFrom.streetAddress"
+                    htmlFor="billFrom.billingFromAddress.streetAddress"
                     className="text-sm font-medium"
                   >
                     Street Address
                   </label>
                   <input
                     type="text"
-                    id="billFrom.streetAddress"
-                    name="billFrom.streetAddress"
-                    value={formik.values.billFrom.streetAddress}
+                    id="billFrom.billingFromAddress.streetAddress"
+                    name="billFrom.billingFromAddress.streetAddress"
+                    value={
+                      formik.values.billFrom.billingFromAddress.streetAddress
+                    }
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={inputClassName}
                   />
-                  {formik.touched.billFrom?.streetAddress &&
-                    formik.errors.billFrom?.streetAddress && (
+                  {formik.touched.billFrom?.billingFromAddress?.streetAddress &&
+                    formik.errors.billFrom?.billingFromAddress
+                      ?.streetAddress && (
                       <p className="text-red-500">
-                        {formik.errors.billFrom.streetAddress}
+                        {
+                          formik.errors.billFrom.billingFromAddress
+                            .streetAddress
+                        }
                       </p>
                     )}
                 </div>
               </div>
             </div>
 
+            {/* Bill To Section */}
             <div className="mb-6">
               <h3 className="text-2xl font-semibold mb-3">Bill To</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -389,15 +447,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label
-                    htmlFor="billTo.country"
+                    htmlFor="billTo.billingToAddress.country"
                     className="text-sm font-medium"
                   >
                     Country
                   </label>
                   <select
-                    id="billTo.country"
-                    name="billTo.country"
-                    value={formik.values.billTo.country}
+                    id="billTo.billingToAddress.country"
+                    name="billTo.billingToAddress.country"
+                    value={formik.values.billTo.billingToAddress.country}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={inputClassName}
@@ -411,54 +469,57 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                       </option>
                     ))}
                   </select>
-                  {formik.touched.billTo?.country &&
-                    formik.errors.billTo?.country && (
+                  {formik.touched.billTo?.billingToAddress?.country &&
+                    formik.errors.billTo?.billingToAddress?.country && (
                       <p className="text-red-500">
-                        {formik.errors.billTo.country}
+                        {formik.errors.billTo.billingToAddress.country}
                       </p>
                     )}
                 </div>
 
                 <div>
-                  <label htmlFor="billTo.city" className="text-sm font-medium">
+                  <label
+                    htmlFor="billTo.billingToAddress.city"
+                    className="text-sm font-medium"
+                  >
                     City
                   </label>
                   <input
                     type="text"
-                    id="billTo.city"
-                    name="billTo.city"
-                    value={formik.values.billTo.city}
+                    id="billTo.billingToAddress.city"
+                    name="billTo.billingToAddress.city"
+                    value={formik.values.billTo.billingToAddress.city}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={inputClassName}
                   />
-                  {formik.touched.billTo?.city &&
-                    formik.errors.billTo?.city && (
+                  {formik.touched.billTo?.billingToAddress?.city &&
+                    formik.errors.billTo?.billingToAddress?.city && (
                       <p className="text-red-500">
-                        {formik.errors.billTo.city}
+                        {formik.errors.billTo.billingToAddress.city}
                       </p>
                     )}
                 </div>
                 <div>
                   <label
-                    htmlFor="billTo.postalCode"
+                    htmlFor="billTo.billingToAddress.postalCode"
                     className="text-sm font-medium"
                   >
                     Postal Code
                   </label>
                   <input
                     type="text"
-                    id="billTo.postalCode"
-                    name="billTo.postalCode"
-                    value={formik.values.billTo.postalCode}
+                    id="billTo.billingToAddress.postalCode"
+                    name="billTo.billingToAddress.postalCode"
+                    value={formik.values.billTo.billingToAddress.postalCode}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={inputClassName}
                   />
-                  {formik.touched.billTo?.postalCode &&
-                    formik.errors.billTo?.postalCode && (
+                  {formik.touched.billTo?.billingToAddress?.postalCode &&
+                    formik.errors.billTo?.billingToAddress?.postalCode && (
                       <p className="text-red-500">
-                        {formik.errors.billTo.postalCode}
+                        {formik.errors.billTo.billingToAddress.postalCode}
                       </p>
                     )}
                 </div>
@@ -466,30 +527,31 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label
-                    htmlFor="billTo.streetAddress"
+                    htmlFor="billTo.billingToAddress.streetAddress"
                     className="text-sm font-medium"
                   >
                     Street Address
                   </label>
                   <input
                     type="text"
-                    id="billTo.streetAddress"
-                    name="billTo.streetAddress"
-                    value={formik.values.billTo.streetAddress}
+                    id="billTo.billingToAddress.streetAddress"
+                    name="billTo.billingToAddress.streetAddress"
+                    value={formik.values.billTo.billingToAddress.streetAddress}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className={inputClassName}
                   />
-                  {formik.touched.billTo?.streetAddress &&
-                    formik.errors.billTo?.streetAddress && (
+                  {formik.touched.billTo?.billingToAddress?.streetAddress &&
+                    formik.errors.billTo?.billingToAddress?.streetAddress && (
                       <p className="text-red-500">
-                        {formik.errors.billTo.streetAddress}
+                        {formik.errors.billTo.billingToAddress.streetAddress}
                       </p>
                     )}
                 </div>
               </div>
             </div>
 
+            {/* Invoice Details Section */}
             <div className="mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -560,7 +622,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               </div>
             </div>
 
-            {/* Items List */}
+            {/* Items List Section */}
             <div>
               <h3 className="text-2xl font-semibold mb-4">Items List</h3>
               {formik.values.items.map((item, index) => (
@@ -693,6 +755,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </form>
         </div>
 
+        {/* Invoice Preview Section */}
         <div className="w-full flex flex-col">
           <InvoicePreview invoiceData={formik.values} />
         </div>
