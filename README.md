@@ -4,6 +4,10 @@
 
 This project is a Next.js application for creating an invoice, mainly to create, and save invoices. It uses React with TypeScript for the frontend, along with Formik for form handling and validation. The application communicates with a GraphQL backend to save the invoice data.
 
+The project also utilizes a REST API to fetch a list of countries for the billing information section of the form. API Link: [https://restcountries.com/v3.1/all](https://restcountries.com/v3.1/all).
+
+The application is deployed and accessible on Vercel: [https://invoice-form-six.vercel.app/](https://invoice-form-six.vercel.app/).
+
 ## Table of Contents
 
 - [Technologies Used](#technologies-used)
