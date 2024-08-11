@@ -10,18 +10,22 @@ const initialFormData: InvoiceData = {
   billFrom: {
     companyName: "",
     companyEmail: "",
-    country: "",
-    city: "",
-    postalCode: "",
-    streetAddress: "",
+    billingFromAddress: {
+      country: "",
+      city: "",
+      postalCode: "",
+      streetAddress: "",
+    },
   },
   billTo: {
     clientName: "",
     clientEmail: "",
-    country: "",
-    city: "",
-    postalCode: "",
-    streetAddress: "",
+    billingToAddress: {
+      country: "",
+      city: "",
+      postalCode: "",
+      streetAddress: "",
+    },
   },
   invoiceDate: new Date().toISOString().split("T")[0],
   paymentTerms: "",
@@ -35,11 +39,11 @@ export default function Home() {
   return (
     <div className={`${inter.className}`}>
       <Header />
-        <InvoiceForm
-          invoiceData={invoiceData}
-          setInvoiceData={setInvoiceData}
-          initialFormData={initialFormData}
-        />
+      <InvoiceForm
+        invoiceData={invoiceData}
+        setInvoiceData={setInvoiceData}
+        initialFormData={initialFormData}
+      />
     </div>
   );
 }

@@ -1,3 +1,5 @@
+// InvoicePreview.tsx
+
 import React from "react";
 import { InvoiceData } from "../../interfaces/types";
 
@@ -6,23 +8,26 @@ interface InvoicePreviewProps {
 }
 
 const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
-  // Provide default values if invoiceData is undefined or properties are missing
   const {
     billFrom = {
       companyName: "",
       companyEmail: "",
-      country: "",
-      city: "",
-      postalCode: "",
-      streetAddress: "",
+      billingFromAddress: {
+        country: "",
+        city: "",
+        postalCode: "",
+        streetAddress: "",
+      },
     },
     billTo = {
       clientName: "",
       clientEmail: "",
-      country: "",
-      city: "",
-      postalCode: "",
-      streetAddress: "",
+      billingToAddress: {
+        country: "",
+        city: "",
+        postalCode: "",
+        streetAddress: "",
+      },
     },
     invoiceDate = "",
     paymentTerms = "",
@@ -45,16 +50,15 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
     if (isNaN(parsedDate.getTime())) {
       return "Invalid date";
     }
-    return new Intl.DateTimeFormat('en-US', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
+    return new Intl.DateTimeFormat("en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     }).format(parsedDate);
   };
-  
 
   const formatPaymentTerms = (terms: string) => {
-    return terms.replace(/_/g, ' ');
+    return terms.replace(/_/g, " ");
   };
 
   const labelStyle = "text-base font-normal text-[#76787D] mb-3";
@@ -92,25 +96,41 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
                   <p className={`break-all ${valueStyle}`}>
                     {billFrom.companyEmail}
                   </p>
-                  <p className={valueStyle}>{billFrom.streetAddress}</p>
-                  <p className={`break-all ${valueStyle}`}>
-                    {billFrom.city}
-                    {billFrom.city && billFrom.postalCode && ","}{" "}
-                    {billFrom.postalCode}
+                  <p className={valueStyle}>
+                    {billFrom.billingFromAddress.streetAddress}
                   </p>
-                  <p className={`break-all ${valueStyle}`}>{billFrom.country}</p>
+                  <p className={`break-all ${valueStyle}`}>
+                    {billFrom.billingFromAddress.city}
+                    {billFrom.billingFromAddress.city &&
+                      billFrom.billingFromAddress.postalCode &&
+                      ","}{" "}
+                    {billFrom.billingFromAddress.postalCode}
+                  </p>
+                  <p className={`break-all ${valueStyle}`}>
+                    {billFrom.billingFromAddress.country}
+                  </p>
                 </div>
                 <div className="flex flex-col">
                   <label className={labelStyle}>Billed To</label>
-                  <p className={`break-all ${valueStyle}`}>{billTo.clientName}</p>
-                  <p className={`break-all ${valueStyle}`}>{billTo.clientEmail}</p>
-                  <p className={valueStyle}>{billTo.streetAddress}</p>
                   <p className={`break-all ${valueStyle}`}>
-                    {billTo.city}
-                    {billTo.city && billTo.postalCode && ","}{" "}
-                    {billTo.postalCode}
+                    {billTo.clientName}
                   </p>
-                  <p className={`break-all ${valueStyle}`}>{billTo.country}</p>
+                  <p className={`break-all ${valueStyle}`}>
+                    {billTo.clientEmail}
+                  </p>
+                  <p className={valueStyle}>
+                    {billTo.billingToAddress.streetAddress}
+                  </p>
+                  <p className={`break-all ${valueStyle}`}>
+                    {billTo.billingToAddress.city}
+                    {billTo.billingToAddress.city &&
+                      billTo.billingToAddress.postalCode &&
+                      ","}{" "}
+                    {billTo.billingToAddress.postalCode}
+                  </p>
+                  <p className={`break-all ${valueStyle}`}>
+                    {billTo.billingToAddress.country}
+                  </p>
                 </div>
               </div>
               <div className="">
