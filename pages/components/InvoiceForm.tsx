@@ -21,10 +21,11 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   setInvoiceData,
   initialFormData,
 }) => {
-  const [isResetting, setIsResetting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [countries, setCountries] = useState<string[]>([]);
+  const [isResetting, setIsResetting] = useState(false); // State for reset button loading
+  const [isSaving, setIsSaving] = useState(false); // State for save button loading
+  const [countries, setCountries] = useState<string[]>([]); // State to store the list of countries
 
+  // Fetch the list of countries when the component mounts
   useEffect(() => {
     axios
       .get("https://restcountries.com/v3.1/all")
@@ -32,13 +33,14 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         const countryNames = response.data.map(
           (country: any) => country.name.common
         );
-        setCountries(countryNames.sort());
+        setCountries(countryNames.sort()); // Sort by name and set the countries
       })
       .catch((error) => {
         console.error("Error fetching countries:", error);
       });
   }, []);
 
+  // Reset form to initial values
   const handleReset = () => {
     setIsResetting(true);
     setTimeout(() => {
@@ -48,7 +50,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }, 1000);
   };
 
+  // Validate and save the form data
   const handleSave = async () => {
+    // Set touched fields to trigger validation messages
     formik.setTouched({
       billFrom: {
         companyName: true,
@@ -80,8 +84,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       })),
     });
 
+    // Validate the form
     const errors = await formik.validateForm();
     if (Object.keys(errors).length === 0) {
+      // Calculate subtotal, tax, and total
       const subtotal = calculateSubtotal();
       const tax = subtotal * 0.1; // Assuming 10% tax
       const total = subtotal + tax;
@@ -106,6 +112,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         // );
         // console.log("Saved Invoice:", savedInvoice);
 
+        // Simulate save for demonstration purposes
         console.log(updatedInvoiceData);
         setTimeout(() => {
           setIsSaving(false);
@@ -125,6 +132,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }
   };
 
+  // Calculate the subtotal of all items
   const calculateSubtotal = () => {
     return formik.values.items.reduce(
       (sum, item) => sum + item.quantity * item.price,
@@ -132,52 +140,51 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     );
   };
 
-  const validationSchema = Yup.object().shape({
-    billFrom: Yup.object({
-      companyName: Yup.string().required("Company name is required"),
-      companyEmail: Yup.string()
-        .email("Invalid email")
-        .required("Email is required"),
-      billingFromAddress: Yup.object({
-        country: Yup.string().required("Country is required"),
-        city: Yup.string().required("City is required"),
-        postalCode: Yup.string().required("Postal code is required"),
-        streetAddress: Yup.string().required("Street address is required"),
-      }),
-    }),
-    billTo: Yup.object({
-      clientName: Yup.string().required("Client name is required"),
-      clientEmail: Yup.string()
-        .email("Invalid email")
-        .required("Email is required"),
-      billingToAddress: Yup.object({
-        country: Yup.string().required("Country is required"),
-        city: Yup.string().required("City is required"),
-        postalCode: Yup.string().required("Postal code is required"),
-        streetAddress: Yup.string().required("Street address is required"),
-      }),
-    }),
-    invoiceDate: Yup.string().required("Invoice date is required"),
-    paymentTerms: Yup.string().required("Payment terms are required"),
-    projectDescription: Yup.string().required(
-      "Project description is required"
-    ),
-    items: Yup.array().of(
-      Yup.object({
-        name: Yup.string().required("Item name is required"),
-        quantity: Yup.number()
-          .min(1, "Quantity must be at least 1")
-          .required("Quantity is required"),
-        price: Yup.number()
-          .min(0, "Price must be a positive number")
-          .required("Price is required"),
-      })
-    ),
-  });
-
+  // Formik setup with initial values and validation schema
   const formik = useFormik<InvoiceData>({
     initialValues: invoiceData,
-    validationSchema,
+    validationSchema: Yup.object().shape({
+      billFrom: Yup.object({
+        companyName: Yup.string().required("Company name is required"),
+        companyEmail: Yup.string()
+          .email("Invalid email")
+          .required("Email is required"),
+        billingFromAddress: Yup.object({
+          country: Yup.string().required("Country is required"),
+          city: Yup.string().required("City is required"),
+          postalCode: Yup.string().required("Postal code is required"),
+          streetAddress: Yup.string().required("Street address is required"),
+        }),
+      }),
+      billTo: Yup.object({
+        clientName: Yup.string().required("Client name is required"),
+        clientEmail: Yup.string()
+          .email("Invalid email")
+          .required("Email is required"),
+        billingToAddress: Yup.object({
+          country: Yup.string().required("Country is required"),
+          city: Yup.string().required("City is required"),
+          postalCode: Yup.string().required("Postal code is required"),
+          streetAddress: Yup.string().required("Street address is required"),
+        }),
+      }),
+      invoiceDate: Yup.string().required("Invoice date is required"),
+      paymentTerms: Yup.string().required("Payment terms are required"),
+      projectDescription: Yup.string().required(
+        "Project description is required"
+      ),
+      items: Yup.array().of(
+        Yup.object({
+          name: Yup.string().required("Item name is required"),
+          quantity: Yup.number()
+            .min(1, "Quantity must be at least 1")
+            .required("Quantity is required"),
+          price: Yup.number()
+            .min(0, "Price must be a positive number")
+            .required("Price is required"),
+        })
+      ),
+    }),
     enableReinitialize: true,
     onSubmit: async (values) => {
       setInvoiceData(values);
@@ -219,8 +226,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       </div>
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+        {/* Invoice Form Section */}
         <div className="w-full bg-white p-6 rounded-3xl border border-[#D0D5DD] flex flex-col">
           <form onSubmit={formik.handleSubmit} className="flex flex-col h-full">
+            {/* Bill From Section */}
             <div className="mb-8">
               <h3 className="text-2xl font-semibold mb-3">Bill From</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -384,6 +393,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               </div>
             </div>
 
+            {/* Bill To Section */}
             <div className="mb-6">
               <h3 className="text-2xl font-semibold mb-3">Bill To</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -541,6 +551,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               </div>
             </div>
 
+            {/* Invoice Details Section */}
             <div className="mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -611,7 +622,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               </div>
             </div>
 
-            {/* Items List */}
+            {/* Items List Section */}
             <div>
               <h3 className="text-2xl font-semibold mb-4">Items List</h3>
               {formik.values.items.map((item, index) => (
@@ -744,6 +755,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </form>
         </div>
 
+        {/* Invoice Preview Section */}
         <div className="w-full flex flex-col">
           <InvoicePreview invoiceData={formik.values} />
         </div>

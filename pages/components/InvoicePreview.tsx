@@ -1,5 +1,3 @@
-// InvoicePreview.tsx
-
 import React from "react";
 import { InvoiceData } from "../../interfaces/types";
 
@@ -35,20 +33,23 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
     items = [],
   } = invoiceData || {};
 
+  // Calculate the subtotal of all items
   const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + item.quantity * item.price, 0);
   };
 
+  // Calculate the total amount including tax
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
-    const tax = subtotal * 0.1;
+    const tax = subtotal * 0.1; // Assuming 10% tax rate
     return subtotal + tax;
   };
 
+  // Format the date in a user-friendly format
   const formatDate = (date: string) => {
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
-      return "Invalid date";
+      return "Invalid date"; // Handle invalid dates
     }
     return new Intl.DateTimeFormat("en-US", {
       day: "2-digit",
@@ -57,6 +58,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
     }).format(parsedDate);
   };
 
+  // Format payment terms by replacing underscores with spaces
   const formatPaymentTerms = (terms: string) => {
     return terms.replace(/_/g, " ");
   };
@@ -75,6 +77,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
                 New Invoice
               </h3>
               <hr />
+              {/* Display invoice date and payment terms */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 mt-6">
                 <div className="flex flex-col">
                   <label className={labelStyle}>Invoice Date</label>
@@ -87,6 +90,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
                   </p>
                 </div>
               </div>
+              {/* Display billing information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="flex flex-col">
                   <label className={labelStyle}>Billed From</label>
@@ -133,12 +137,14 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
                   </p>
                 </div>
               </div>
+              {/* Display project description */}
               <div className="">
                 <div className="flex flex-col">
                   <label className={labelStyle}>Project Description</label>
                   <p className={valueStyle}>{projectDescription}</p>
                 </div>
               </div>
+              {/* Display list of items */}
               <div className="mb-4 mt-2">
                 <div className="grid grid-cols-4 gap-4 bg-[#F5F5F5] p-2 rounded">
                   <span className="font-normal text-base text-left text-[#76787D]">
@@ -155,7 +161,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
                   </span>
                 </div>
                 {items.map((item, index) => {
-                  const price = Number(item.price) || 0;
+                  const price = Number(item.price) || 0; // Ensure price is a number
                   return (
                     <div key={index} className="grid grid-cols-4 gap-4 p-2">
                       {item.name && (
@@ -180,6 +186,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceData }) => {
               </div>
               <hr />
 
+              {/* Display subtotal, tax, and total */}
               <div className="mb-2 mt-6 text-[#101828] text-base font-semibold">
                 <div className="flex md:justify-end">
                   <div className="md:text-right">
