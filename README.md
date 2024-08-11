@@ -8,6 +8,10 @@ The project also utilizes a REST API to fetch a list of countries for the billin
 
 The application is deployed and accessible on Vercel: [https://invoice-form-six.vercel.app/](https://invoice-form-six.vercel.app/).
 
+## Important Note
+
+Please note that the API endpoint for creating invoices using the GraphQL mutation was not successfully implemented. This was due to issues encountered while exploring and sending requests to the GraphQL endpoint. As a result, the code related to the GraphQL API is present in the repository, but it may not function as intended. Further debugging and exploration are required to fully integrate the GraphQL API.
+
 ## Table of Contents
 
 - [Technologies Used](#technologies-used)
